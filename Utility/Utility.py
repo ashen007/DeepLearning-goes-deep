@@ -16,7 +16,7 @@ def save_train_history(history_dict, file_path):
 
 
 def create_metric_graph(history_dict, metric='accuracy', validation=True, file_path=None):
-    epochs = list(range(history_dict.history[metric]))
+    epochs = list(range(len(history_dict.history[metric])))
 
     plt.figure(figsize=[12, 6], dpi=300)
     sns.lineplot(x=epochs,
@@ -41,7 +41,7 @@ def create_metric_graph(history_dict, metric='accuracy', validation=True, file_p
 
 
 def create_loss_graph(history_dict, validation=True, file_path=None):
-    epochs = list(range(history_dict.history['loss']))
+    epochs = list(range(len(history_dict.history['loss'])))
 
     plt.figure(figsize=[12, 6], dpi=300)
     sns.lineplot(x=epochs,
@@ -66,7 +66,7 @@ def create_loss_graph(history_dict, validation=True, file_path=None):
 
 
 def create_learning_rate(history_dict, file_path=None):
-    epochs = list(range(history_dict.history['lr']))
+    epochs = list(range(len(history_dict.history['lr'])))
     figure, axes = plt.subplots(nrows=1, ncols=2, figsize=[12, 6], dpi=300)
 
     sns.lineplot(x=epochs,

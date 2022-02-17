@@ -4,13 +4,9 @@ from tensorflow.keras.activations import relu, softmax
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 
 optimizer = SGD(learning_rate=1e-2, momentum=9e-1)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=1e-1, patience=20)
-model_checkpoint = ModelCheckpoint(filepath='../../models/CV/vgg16_checkpoint.hdf5', save_best_only=True)
 weight_decay = 5e-4
-epoch = 75
 
 
 def vgg_nett16(input_shape=(224, 224, 3), classes=None):
