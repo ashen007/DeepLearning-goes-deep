@@ -9,7 +9,7 @@ optimizer = SGD(learning_rate=1e-2, momentum=9e-1)
 weight_decay = 5e-4
 
 
-def vgg_net16(input_shape=(224, 224, 3), classes=None):
+def vgg_net16_d(input_shape=(224, 224, 3), classes=None):
     # input layer
     input_layer = Input(shape=input_shape, name='input_')
 
@@ -32,7 +32,7 @@ def vgg_net16(input_shape=(224, 224, 3), classes=None):
                activation=relu)(x)
     x = Conv2D(filters=256, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
-    x = Conv2D(filters=256, kernel_size=(1, 1), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
+    x = Conv2D(filters=256, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
     x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
 
@@ -41,7 +41,7 @@ def vgg_net16(input_shape=(224, 224, 3), classes=None):
                activation=relu)(x)
     x = Conv2D(filters=512, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
-    x = Conv2D(filters=512, kernel_size=(1, 1), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
+    x = Conv2D(filters=512, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
     x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
 
@@ -50,7 +50,7 @@ def vgg_net16(input_shape=(224, 224, 3), classes=None):
                activation=relu)(x)
     x = Conv2D(filters=512, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
-    x = Conv2D(filters=512, kernel_size=(1, 1), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
+    x = Conv2D(filters=512, kernel_size=(3, 3), strides=(1, 1), kernel_regularizer=l2(weight_decay), padding='same',
                activation=relu)(x)
     x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
 
