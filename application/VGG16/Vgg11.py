@@ -9,7 +9,7 @@ optimizer = SGD(learning_rate=1e-2, momentum=9e-1)
 weight_decay = 5e-4
 
 
-def vgg_net16(input_shape=(224, 224, 3), classes=None):
+def vgg_net11(input_shape=(224, 224, 3), classes=None):
     # input layer
     input_layer = Input(shape=input_shape, name='input_')
 
