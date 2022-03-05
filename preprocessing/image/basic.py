@@ -67,51 +67,51 @@ class BasicAugmentation:
             if delta is None:
                 for i in range(steps):
                     change_factor = np.round(np.random.uniform(-1, 1), 2)
-                    bc_img = tf.image.adjust_brightness(img, change_factor)
-                    hue_img = tf.image.adjust_hue(img, change_factor)
-                    sat_img = tf.image.adjust_saturation(img, change_factor)
+                    bc_img = array_to_img(tf.image.adjust_brightness(img, change_factor))
+                    hue_img = array_to_img(tf.image.adjust_hue(img, change_factor))
+                    sat_img = array_to_img(tf.image.adjust_saturation(img, change_factor))
 
                     # save transformed images
-                    bc_img.save(f'bc_{i}_{image}')
-                    hue_img.save(f'hue_{i}_{image}')
-                    sat_img.save(f'sat_{i}_{image}')
+                    bc_img.save(os.path.join(dst, f'bc_{i}_{image}'))
+                    hue_img.save(os.path.join(dst, f'hue_{i}_{image}'))
+                    sat_img.save(os.path.join(dst, f'sat_{i}_{image}'))
+
+            elif isinstance(delta, float):
+                for i in range(steps):
+                    change_factor = np.round(np.random.uniform(-1 * delta, 1 * delta), 2)
+                    bc_img = array_to_img(tf.image.adjust_brightness(img, change_factor))
+                    hue_img = array_to_img(tf.image.adjust_hue(img, change_factor))
+                    sat_img = array_to_img(tf.image.adjust_saturation(img, change_factor))
+
+                    # save transformed images
+                    bc_img.save(os.path.join(dst, f'bc_{i}_{image}'))
+                    hue_img.save(os.path.join(dst, f'hue_{i}_{image}'))
+                    sat_img.save(os.path.join(dst, f'sat_{i}_{image}'))
 
             if factor is None:
                 if gamma_transformation:
                     for i in range(steps):
-                        gamma = np.round(np.random.uniform(-5, 5), 2)
-                        gamma_img = tf.image.adjust_gamma(img, gamma)
-                        gamma_img.save(f'gamma_img_{i}_{image}')
+                        gamma = np.round(np.random.uniform(1, 5), 2)
+                        gamma_img = array_to_img(tf.image.adjust_gamma(img, gamma))
+                        gamma_img.save(os.path.join(dst, f'gamma_img_{i}_{image}'))
 
                 if change_contrast:
                     for i in range(steps):
-                        factor = np.round(np.random.uniform(-5, 5), 2)
-                        cont_img = tf.image.adjust_contrast(img, factor)
-                        cont_img.save(f'cont_img_{i}_{image}')
+                        change_factor = np.round(np.random.uniform(-5, 5), 2)
+                        cont_img = array_to_img(tf.image.adjust_contrast(img, change_factor))
+                        cont_img.save(os.path.join(dst, f'cont_img_{i}_{image}'))
 
-            if isinstance(delta, float):
-                for i in range(steps):
-                    change_factor = np.round(np.random.uniform(-1 * delta, 1 * delta), 2)
-                    bc_img = tf.image.adjust_brightness(img, change_factor)
-                    hue_img = tf.image.adjust_hue(img, change_factor)
-                    sat_img = tf.image.adjust_saturation(img, change_factor)
-
-                    # save transformed images
-                    bc_img.save(f'bc_{i}_{image}')
-                    hue_img.save(f'hue_{i}_{image}')
-                    sat_img.save(f'sat_{i}_{image}')
-
-            if isinstance(factor, int):
+            elif isinstance(factor, int):
                 if gamma_transformation:
                     for i in range(steps):
-                        gamma = np.round(np.random.uniform(-1 * factor, factor), 2)
-                        gamma_img = tf.image.adjust_gamma(img, gamma)
-                        gamma_img.save(f'gamma_img_{i}_{image}')
+                        gamma = np.round(np.random.uniform(1, factor), 2)
+                        gamma_img = array_to_img(tf.image.adjust_gamma(img, gamma))
+                        gamma_img.save(os.path.join(dst, f'gamma_img_{i}_{image}'))
 
                 if change_contrast:
                     for i in range(steps):
                         factor = np.round(np.random.uniform(-1 * factor, factor), 2)
-                        cont_img = tf.image.adjust_contrast(img, factor)
-                        cont_img.save(f'cont_img_{i}_{image}')
+                        cont_img = array_to_img(tf.image.adjust_contrast(img, factor))
+                        cont_img.save(os.path.join(dst, f'cont_img_{i}_{image}'))
 
-            img.save(os.path.join(dst, image))
+            array_to_img(img).save(os.path.join(dst, image))
