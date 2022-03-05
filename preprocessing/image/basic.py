@@ -28,3 +28,29 @@ class BasicAugmentation:
             flip_lr.save(dst_lr_path)
             flip_ud.save(dst_ud_path)
             img.save(os.path.join(dst, image))
+
+    @staticmethod
+    def rgb_channel_isolation(self, path, dst):
+        images = os.listdir(path)
+
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path))
+            r, g, b = img, img, img
+            r[:, :, 1:3] = 0
+            g[:, :, 0] = 0
+            g[:, :, 2] = 0
+            b[:, :, 0:2] = 0
+
+            # red component
+            r = array_to_img(r)
+            r.save(os.path.join(dst, f'_isolate_r_{image}'))
+            # green component
+            g = array_to_img(g)
+            g.save(os.path.join(dst, f'_isolate_g_{image}'))
+            # blue component
+            b = array_to_img(b)
+            b.save(os.path.join(dst, f'_isolate_b_{image}'))
+            # original
+            img = array_to_img(img)
+            img.save(os.path.join(dst, image))
