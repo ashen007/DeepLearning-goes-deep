@@ -170,3 +170,19 @@ class BasicAugmentation:
                 array_to_img(rs_img).save(os.path.join(dst, f'rs_img_{i}_{image}'))
 
             array_to_img(img).save(os.path.join(dst, image))
+
+    @staticmethod
+    def noise_injection(path, dst, magnitude=0.5, amount=3):
+        images = os.listdir(path)
+
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path)) / 255.
+
+            for i in range(amount):
+                random_magnitude = np.round(np.random.uniform(0, magnitude), 2)
+                noise = np.random.normal(0, np.round(random_magnitude, decimals=3), size=img.shape)
+                ni_img = array_to_img((img + noise))
+                array_to_img(ni_img).save(os.path.join(dst, f'ni_img_{i}_{image}'))
+
+            array_to_img(img).save(os.path.join(dst, image))
