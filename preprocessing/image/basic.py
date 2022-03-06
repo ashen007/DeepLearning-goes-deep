@@ -137,3 +137,11 @@ class BasicAugmentation:
                     array_to_img(rc_img).save(os.path.join(dst, f'rc_img_{i}_{image}'))
 
             array_to_img(img).save(os.path.join(dst, image))
+
+    @staticmethod
+    def rotation(path, dst, angel=30, amount=3):
+        images = os.listdir(path)
+
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path))
