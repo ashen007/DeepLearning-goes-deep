@@ -115,3 +115,25 @@ class BasicAugmentation:
                         cont_img.save(os.path.join(dst, f'cont_img_{i}_{image}'))
 
             array_to_img(img).save(os.path.join(dst, image))
+
+    @staticmethod
+    def cropping(path, dst, central=True, random=False, fraction_low=0.5, fraction_high=0.9, random_width=224,
+                 random_height=224, amount=3):
+        images = os.listdir(path)
+
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path))
+
+            if central:
+                for i in range(amount):
+                    crop_area = np.round(np.random.uniform(fraction_low, fraction_high), 2)
+                    cc_img = tf.image.central_crop(img, central_fraction=crop_area)
+                    array_to_img(cc_img).save(os.path.join(dst, f'cc_img_{i}_{image}'))
+
+            elif random:
+                for i in range(amount):
+                    rc_img = tf.image.random_crop(img, size=[random_width, random_height, 3])
+                    array_to_img(rc_img).save(os.path.join(dst, f'rc_img_{i}_{image}'))
+
+            array_to_img(img).save(os.path.join(dst, image))
