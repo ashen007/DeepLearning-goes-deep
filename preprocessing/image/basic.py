@@ -145,3 +145,10 @@ class BasicAugmentation:
         for image in images:
             image_path = os.path.join(path, image)
             img = img_to_array(PIL.Image.open(image_path))
+
+            for i in range(amount):
+                random_angel = np.random.randint(-1 * angel, angel)
+                ra_img = tfa.image.rotate(img, random_angel)
+                array_to_img(ra_img).save(os.path.join(dst, f'ra_img_{i}_{image}'))
+
+            array_to_img(img).save(os.path.join(dst, image))
