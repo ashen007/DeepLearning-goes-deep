@@ -152,3 +152,21 @@ class BasicAugmentation:
                 array_to_img(ra_img).save(os.path.join(dst, f'ra_img_{i}_{image}'))
 
             array_to_img(img).save(os.path.join(dst, image))
+
+    @staticmethod
+    def translation(path, dst, hshift_amount=0.3, wshift_amount=0.3, height_shift=True, width_shift=True, amount=3):
+        images = os.listdir(path)
+
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path))
+
+            for i in range(amount):
+                random_hshift = np.random.uniform(0.1, hshift_amount)
+                random_wshift = np.random.uniform(0.1, wshift_amount)
+                rs_img = (tf.keras.preprocessing.image.random_shift(img, random_wshift, random_hshift, channel_axis=2,
+                                                                    row_axis=0, col_axis=1,
+                                                                    fill_mode='reflect')).astype(np.uint8)
+                array_to_img(rs_img).save(os.path.join(dst, f'rs_img_{i}_{image}'))
+
+            array_to_img(img).save(os.path.join(dst, image))
