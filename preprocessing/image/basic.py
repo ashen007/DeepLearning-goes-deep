@@ -1,4 +1,6 @@
 import os
+import random
+
 import numpy as np
 import PIL.Image
 import tensorflow as tf
