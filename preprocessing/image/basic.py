@@ -139,8 +139,8 @@ def random_changes_to_color_properties(path, dst, delta=None, gamma_transformati
             array_to_img(img).save(os.path.join(dst, image))
 
 
-def cropping(path, dst, central=True, random=False, fraction_low=0.5, fraction_high=0.9, random_width=224,
-             random_height=224, copies=3, save_original=True):
+def cropping(image, filename=None, path=None, dst=None, central=True, random=False, fraction_low=0.5, fraction_high=0.9,
+             random_width=224, random_height=224, copies=3, save_original=True):
     """
     :type copies: int
     :type random_height: int
@@ -153,25 +153,59 @@ def cropping(path, dst, central=True, random=False, fraction_low=0.5, fraction_h
     :type dst: basestring
     :type path: basestring
     """
-    images = os.listdir(path)
+    if path is not None:
+        images = os.listdir(path)
 
-    for image in images:
-        image_path = os.path.join(path, image)
-        img = img_to_array(PIL.Image.open(image_path))
+        for image in images:
+            image_path = os.path.join(path, image)
+            img = img_to_array(PIL.Image.open(image_path))
 
+            if central:
+                for i in range(copies):
+                    crop_area = np.round(np.random.uniform(fraction_low, fraction_high), 2)
+                    cc_img = tf.image.central_crop(img, central_fraction=crop_area)
+
+                    if dst is not None:
+                        array_to_img(cc_img).save(os.path.join(dst, f'cc_img_{i}_{image}'))
+
+                    else:
+                        return array_to_img(cc_img)
+
+            elif random:
+                for i in range(copies):
+                    rc_img = tf.image.random_crop(img, size=[random_width, random_height, 3])
+
+                    if dst is not None:
+                        array_to_img(rc_img).save(os.path.join(dst, f'rc_img_{i}_{image}'))
+
+                    else:
+                        return array_to_img(rc_img)
+
+            if save_original:
+                array_to_img(img).save(os.path.join(dst, image))
+
+    if image:
         if central:
             for i in range(copies):
                 crop_area = np.round(np.random.uniform(fraction_low, fraction_high), 2)
-                cc_img = tf.image.central_crop(img, central_fraction=crop_area)
-                array_to_img(cc_img).save(os.path.join(dst, f'cc_img_{i}_{image}'))
+                cc_img = tf.image.central_crop(img_to_array(image), central_fraction=crop_area)
+
+                if dst is not None:
+                    array_to_img(cc_img).save(os.path.join(dst, f'cc_img_{i}_{filename}'))
+
+                else:
+                    return array_to_img(cc_img)
 
         elif random:
             for i in range(copies):
-                rc_img = tf.image.random_crop(img, size=[random_width, random_height, 3])
-                array_to_img(rc_img).save(os.path.join(dst, f'rc_img_{i}_{image}'))
+                rc_img = tf.image.random_crop(img_to_array(image),
+                                              size=[random_width, random_height, 3])
 
-        if save_original:
-            array_to_img(img).save(os.path.join(dst, image))
+                if dst is not None:
+                    array_to_img(rc_img).save(os.path.join(dst, f'rc_img_{i}_{filename}'))
+
+                else:
+                    return array_to_img(rc_img)
 
 
 def rotation(path, dst, angel=30, copies=3, save_original=True):
