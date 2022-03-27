@@ -43,46 +43,62 @@ class Inception(Layer):
         return depth_concat
 
 
+class Auxiliary(Layer):
+    def __init__(self, classes, **kwargs):
+        super(Auxiliary, self).__init__(**kwargs)
+        self.out_nodes = classes
+
+    def build(self, input_shape):
+        self.avg_pool = AveragePooling2D(pool_size=(5, 5), strides=(3, 3), padding='valid')
+        self.conv_1 = Conv2D(filters=128, kernel_size=(1, 1), strides=(1, 1), activation=relu, padding='valid')
+        self.dense_1 = Dense(units=1024, activation=relu)
+        self.drop = Dropout(rate=0.7)
+        self.flat = Flatten()
+        self.dense_2 = Dense(units=self.out_nodes, activation=softmax, name='aux_out1')
+
+    def call(self, inputs, *args, **kwargs):
+        x = self.avg_pool(inputs)
+        x = self.conv_1(x)
+        x = self.dense_1(x)
+        x = self.drop(x)
+        x = self.flat(x)
+        x = self.dense_2(x)
+
+        return x
+
+
 def model_builder(shape, classes):
-    model = Sequential([Input(shape=shape),
-                        Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), activation=relu, padding='same'),
-                        MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same'),
-                        BatchNormalization(),
-                        Conv2D(filters=64, kernel_size=(1, 1), strides=(1, 1), activation=relu, padding='same'),
-                        Conv2D(filters=192, kernel_size=(3, 3), strides=(1, 1), activation=relu, padding='same'),
-                        BatchNormalization(),
-                        MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same'),
-                        Inception(64, 128, 96, 32, 16, 32, name='inception_3a'),
-                        Inception(128, 192, 128, 96, 32, 64, name='inception_3b'),
-                        MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same'),
-                        Inception(192, 208, 96, 48, 16, 64, name='inception_4a'),
+    input_layer = Input(shape=shape)
+    x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), activation=relu, padding='same')(input_layer)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = BatchNormalization()(x)
+    x = Conv2D(filters=64, kernel_size=(1, 1), strides=(1, 1), activation=relu, padding='same')(x)
+    x = Conv2D(filters=192, kernel_size=(3, 3), strides=(1, 1), activation=relu, padding='same')(x)
+    x = BatchNormalization()(x)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = Inception(64, 128, 96, 32, 16, 32, name='inception_3a')(x)
+    x = Inception(128, 192, 128, 96, 32, 64, name='inception_3b')(x)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = Inception(192, 208, 96, 48, 16, 64, name='inception_4a')(x)
 
-                        # aux_1 = AveragePooling2D(pool_size=(5, 5), strides=(3, 3), padding='valid')(x)
-                        # aux_1 = Conv2D(filters=128, kernel_size=(1, 1), strides=(1, 1), activation=relu, padding='valid')(aux_1)
-                        # aux_1 = Dense(units=1024, activation=relu)(aux_1)
-                        # aux_1 = Dropout(rate=0.7)(aux_1)
-                        # aux_1 = Flatten()(aux_1)
-                        # aux_out1 = Dense(units=classes, activation=softmax, name='aux_out1')(aux_1)
+    aux_out1 = Auxiliary(classes, name='aux_out1')(x)
 
-                        Inception(160, 224, 112, 64, 24, 64, name='inception_4b'),
-                        Inception(128, 256, 128, 64, 24, 64, name='inception_4c'),
-                        Inception(112, 288, 144, 64, 32, 64, name='inception_4d'),
-                        Inception(256, 320, 160, 128, 32, 128, name='inception_4e'),
+    x = Inception(160, 224, 112, 64, 24, 64, name='inception_4b')(x)
+    x = Inception(128, 256, 128, 64, 24, 64, name='inception_4c')(x)
+    x = Inception(112, 288, 144, 64, 32, 64, name='inception_4d')(x)
+    x = Inception(256, 320, 160, 128, 32, 128, name='inception_4e')(x)
 
-                        # aux_2 = AveragePooling2D(pool_size=(5, 5), strides=(3, 3), padding='valid')(x)
-                        # aux_2 = Conv2D(filters=128, kernel_size=(1, 1), strides=(1, 1), activation=relu, padding='valid')(aux_2)
-                        # aux_2 = Dense(units=1024, activation=relu)(aux_2)
-                        # aux_2 = Dropout(rate=0.7)(aux_2)
-                        # aux_2 = Flatten()(aux_2)
-                        # aux_out2 = Dense(units=classes, activation=softmax, name='aux_out2')(aux_2)
+    aux_out2 = Auxiliary(classes, name='aux_out2')(x)
 
-                        MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same'),
-                        Inception(256, 320, 160, 128, 32, 128, name='inception_5a'),
-                        Inception(384, 384, 192, 128, 48, 128, name='inception_5b'),
-                        AveragePooling2D(pool_size=(7, 7), strides=(1, 1)),
-                        Dropout(rate=0.4),
-                        Flatten(),
-                        Dense(units=classes, activation=softmax, name='main_out')])
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = Inception(256, 320, 160, 128, 32, 128, name='inception_5a')(x)
+    x = Inception(384, 384, 192, 128, 48, 128, name='inception_5b')(x)
+    x = AveragePooling2D(pool_size=(7, 7), strides=(1, 1))(x)
+    x = Dropout(rate=0.4)(x)
+    x = Flatten()(x)
+    main_out = Dense(units=classes, activation=softmax, name='main_out')(x)
+
+    model = Model(input_layer, [main_out, aux_out1, aux_out2])
 
     model.compile(optimizer=Adam(), loss=categorical_crossentropy,
                   loss_weights={'main_out': 1, 'aux_out1': 0.3, 'aux_out2': 0.3},
