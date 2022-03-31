@@ -11,6 +11,7 @@ from tensorflow.keras.layers import Add
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import AveragePooling2D
+from tensorflow.keras.layers import Flatten
 
 from tensorflow.keras.activations import relu, softmax
 from tensorflow.keras.losses import categorical_crossentropy
@@ -38,9 +39,10 @@ def residual_block(x, filters, kernel=(3, 3), strid=(1, 1), projection=False):
 
 def build(input_shape, classes):
     input_layer = Input(input_shape)
-    x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), padding='same')(input_layer)
+    x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), padding='valid')(input_layer)
     x = BatchNormalization()(x)
-    x = MaxPooling2D(pool_size=(3, 3))(x)
+    x = Activation(activation=relu)(x)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2))(x)
 
     x = residual_block(x, filters=64)
     x = residual_block(x, filters=64)
@@ -62,7 +64,8 @@ def build(input_shape, classes):
     x = residual_block(x, filters=512)
     x = residual_block(x, filters=512)
 
-    x = AveragePooling2D()(x)
+    x = AveragePooling2D(pool_size=(7, 7))(x)
+    x = Flatten()(x)
     output_layer = Dense(units=classes, activation=softmax)(x)
 
     model = Model(input_layer, output_layer)
