@@ -13,9 +13,10 @@ from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import AveragePooling2D
 from tensorflow.keras.layers import Flatten
 
+from tensorflow.keras.metrics import Recall
 from tensorflow.keras.activations import relu, softmax
 from tensorflow.keras.losses import categorical_crossentropy
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Nadam
 
 
 def residual_block(x, filters, kernel=(3, 3), strid=(1, 1), projection=False):
@@ -69,9 +70,9 @@ def build(input_shape, classes):
     output_layer = Dense(units=classes, activation=softmax)(x)
 
     model = Model(input_layer, output_layer)
-    model.compile(optimizer=Adam(learning_rate=0.1),
+    model.compile(optimizer=Nadam(),
                   loss=categorical_crossentropy,
-                  metrics=['accuracy', tfa.metrics.F1Score(num_classes=classes, threshold=0.5)])
+                  metrics=['accuracy', Recall()])
     model.summary()
 
     return model
