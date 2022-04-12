@@ -1,3 +1,4 @@
 # Project exclude paths
 /data/
 /models/CV/
+/notebooks/sorghum/submission/1/model.hdf5

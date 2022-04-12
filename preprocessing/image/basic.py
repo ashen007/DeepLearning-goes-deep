@@ -10,6 +10,150 @@ import tensorflow_io as tfio
 from tensorflow.keras.utils import array_to_img, img_to_array
 
 
+def load_image(path, mode='RGB'):
+    return PIL.Image.open(path, mode=mode)
+
+
+def to_array(image):
+    return np.asarray(image)
+
+
+def to_image(array, mode='RGB'):
+    return PIL.Image.fromarray(np.uint8(array), mode=mode)
+
+
+def change_rgb_to(image, mode='grayscale'):
+    if mode == 'grayscale':
+        temp = tf.image.rgb_to_grayscale(image)
+        return temp
+
+    elif mode == 'hsv':
+        temp = tf.image.rgb_to_hsv(image)
+        return temp
+
+    elif mode == 'yiq':
+        temp = tf.image.rgb_to_yiq(image)
+        return temp
+
+    elif mode == 'yuv':
+        temp = tf.image.rgb_to_yuv(image)
+        return temp
+
+
+def change_contrast(image, lower, upper, copies=1):
+    copies = [tf.image.random_contrast(image, lower=lower, upper=upper) for _ in range(copies)]
+    return copies
+
+
+def change_brightness(image, delta, copies=1):
+    copies = [tf.image.random_brightness(image, max_delta=delta) for _ in range(copies)]
+    return copies
+
+
+def change_hue(image, delta, copies=1):
+    copies = [tf.image.random_hue(image, max_delta=delta) for _ in range(copies)]
+    return copies
+
+
+def gamma_transformation(image, gamma=0.3, copies=1):
+    low = 1 - gamma
+    up = 1 + gamma
+    copies = [tf.image.adjust_gamma(image, gamma=np.random.uniform(low, up, 1)) for _ in range(copies)]
+    return copies
+
+
+def resize(image, size):
+    return tf.image.resize(image, size)
+
+
+def resize_smallest_side_different_scales(image, smallest_side_to=(128, 256, 384)):
+    height, width = to_array(image).shape[:2]
+    scaled_list = []
+
+    if height < width:
+
+        for scale in smallest_side_to:
+            scaled = tf.image.resize(image, (scale, width))
+            scaled_list.append(scaled)
+
+        return scaled_list
+
+    else:
+
+        for scale in smallest_side_to:
+            scaled = tf.image.resize(image, (height, scale))
+            scaled_list.append(scaled)
+
+        return scaled_list
+
+
+def resize_with_aspect_ratio(image, target_width=(128, 256, 512), input_shape=(224, 224)):
+    h, w = to_array(image).shape[:2]
+    r = h / w
+    resized = []
+
+    for width in target_width:
+        resized_h = int(r * width)
+        resized_img = resize(image, (resized_h, width))
+        resized.append(to_image(tf.image.resize_with_crop_or_pad(resized_img, input_shape[0], input_shape[1])))
+
+    return resized
+
+
+def bounding_boxes(offsets, dim):
+    boxes = []
+
+    for i in offsets:
+        offset_height, offset_width = i
+        target_height, target_width = dim
+        boxes.append([offset_height, offset_width, target_height, target_width])
+
+    return boxes
+
+
+def random_sectioning(image, offsets, dims):
+    boxes = bounding_boxes(offsets, dims)
+    image_sections = []
+    height, width = to_array(image).shape[:2]
+
+    if (height < height // 2 + dims[0]) and (width < width // 2 + dims[1]):
+        image = tf.image.resize(image, (dims[0] * 2, dims[1] * 2))
+
+    if (height > height // 2 + dims[0]) and (width < width // 2 + dims[1]):
+        image = tf.image.resize(image, (height, dims[1] * 2))
+
+    if (height < height // 2 + dims[0]) and (width > width // 2 + dims[1]):
+        image = tf.image.resize(image, (dims[0] * 2, width))
+
+    for box in boxes:
+        if random.choice([True, False]):
+            section = tf.image.crop_to_bounding_box(image, box[0], box[1], box[2], box[3])
+            image_sections.append(section)
+
+    return image_sections
+
+
+def aggressive_cropping(image, copies, crop_window, resize_smallest_side=None, output_shape=(224, 224)):
+    global resized_copies
+
+    if resize_smallest_side is not None:
+        if isinstance(resize_smallest_side, int):
+            img = resize(image, (resize_smallest_side, resize_smallest_side))
+
+        if isinstance(resize_smallest_side, (list, tuple)):
+            resized_copies = [tf.image.resize(image, (size, size)) for size in resize_smallest_side]
+
+    if isinstance(crop_window, int):
+        crops = [tf.image.random_crop(image, (crop_window, crop_window)) for _ in range(copies)]
+
+        return [resize(crop_img, output_shape) for crop_img in crops]
+
+    elif isinstance(crop_window, (list, tuple)):
+        crops = [tf.image.random_crop(image, crop_window) for _ in range(copies)]
+
+        return [resize(crop_img, output_shape) for crop_img in crops]
+
+
 def flip(path, dst, save_original=True):
     """
     :type save_original: bool
@@ -298,3 +442,37 @@ def noise_injection(path, dst, magnitude=0.5, copies=3, save_original=True):
 
         if save_original:
             array_to_img(img).save(os.path.join(dst, image))
+
+
+def pipeline(file_name, src, dst, label):
+    processed = []
+    image = load_image(os.path.join(src, file_name))
+    height, width = to_array(image)
+
+    sections = random_sectioning(to_array(image),
+                                 [[0, 0], [height // 2, 0], [0, width // 2], [height // 2, width // 2],
+                                  [height // 4, width // 4]],
+                                 [224, 224])
+    resize_small_side = resize_smallest_side_different_scales(image, (224, 256, 384))
+    resized_with_aspect_ratio = resize_with_aspect_ratio(image)
+    resized_original = tf.image.resize_with_pad(image, 224, 224)
+
+    for i, arr in enumerate(sections):
+        filename = f'r-sec-{i}-{file_name}'
+        processed.append([filename, label])
+        to_image(arr).save(os.path.join(dst, filename))
+
+    for i, arr in enumerate(resized_with_aspect_ratio):
+        filename = f'r-to-ar-{i}-{file_name}'
+        processed.append([filename, label])
+        to_image(arr).save(os.path.join(dst, filename))
+
+    for img in resize_small_side:
+        rand_crop = aggressive_cropping(to_image(img), 4, (224, 224))
+
+        for i, arr in enumerate(rand_crop):
+            filename = f'agr-crop-{i}-{file_name}'
+            processed.append([filename, label])
+            to_image(arr).save(os.path.join(dst, filename))
+
+    to_image(resized_original).save(os.path.join(dst, file_name))
