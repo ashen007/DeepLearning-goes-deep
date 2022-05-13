@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+from tflearn.layers.conv import global_avg_pool
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Conv2D
@@ -9,7 +10,6 @@ from tensorflow.keras.layers import Add
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import AveragePooling2D
-from tensorflow.keras.layers import GlobalAveragePooling2D, GlobalAveragePooling1D
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import ReLU
 
@@ -39,7 +39,7 @@ def residual_block(x, filters, kernel=(3, 3), strid=(1, 1), projection=False):
 
 
 def squeeze_excitation_block(x, out_dim, ratio):
-    s = GlobalAveragePooling1D()(x)
+    s = global_avg_pool(x)
     e = Dense(units=out_dim / ratio)(s)
     e = ReLU()(e)
     e = Dense(units=out_dim)(e)
@@ -61,13 +61,15 @@ def build(input_shape, classes):
     x = residual_block(x, filters=64)
     x = residual_block(x, filters=64)
     x = residual_block(x, filters=64)
-    x = squeeze_excitation_block(x, out_dim=256, ratio=16)
+    s = squeeze_excitation_block(x, out_dim=64, ratio=16)
+    x = Add()([x, s])
 
     x = residual_block(x, filters=128, strid=(2, 2), projection=True)
     x = residual_block(x, filters=128)
     x = residual_block(x, filters=128)
     x = residual_block(x, filters=128)
-    x = squeeze_excitation_block(x, out_dim=512, ratio=16)
+    s = squeeze_excitation_block(x, out_dim=128, ratio=16)
+    x = Add()([x, s])
 
     x = residual_block(x, filters=256, strid=(2, 2), projection=True)
     x = residual_block(x, filters=256)
@@ -75,12 +77,14 @@ def build(input_shape, classes):
     x = residual_block(x, filters=256)
     x = residual_block(x, filters=256)
     x = residual_block(x, filters=256)
-    x = squeeze_excitation_block(x, out_dim=1024, ratio=16)
+    s = squeeze_excitation_block(x, out_dim=256, ratio=16)
+    x = Add()([x, s])
 
     x = residual_block(x, filters=512, strid=(2, 2), projection=True)
     x = residual_block(x, filters=512)
     x = residual_block(x, filters=512)
-    x = squeeze_excitation_block(x, out_dim=2048, ratio=16)
+    s = squeeze_excitation_block(x, out_dim=512, ratio=16)
+    x = Add()([x, s])
 
     x = AveragePooling2D(pool_size=(7, 7))(x)
     x = Flatten()(x)
