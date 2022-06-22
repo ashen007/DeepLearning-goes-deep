@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DeepLearning-goes-deep.iml" filepath="$PROJECT_DIR$/.idea/DeepLearning-goes-deep.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../StatQuest/.idea/StatQuest.iml" filepath="$PROJECT_DIR$/../StatQuest/.idea/StatQuest.iml" />
     </modules>
   </component>
 </project>
