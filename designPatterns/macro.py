@@ -1,9 +1,9 @@
 from tensorflow.keras.models import Model
 
 
-def steam(input_shape):
+def steam(inputs):
     """ steam layers
-    :param input_shape: the shape of the input tensor
+    :param inputs: the shape of the input tensor
     :return:
     """
     pass
