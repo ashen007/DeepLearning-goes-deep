@@ -129,3 +129,18 @@ def projection_block(x, n_filters, strides=(2, 2)):
     x = layers.ReLU()(x)
 
     return x
+
+
+def classifier(x, n_classes):
+    """ construct the classifier group
+    :param x: input to the classifier
+    :param n_classes: number of output classes
+    :return:
+    """
+    # pool at the end of all convolutional residual blocks
+    x = layers.GlobalAveragePooling2D()(x)
+
+    # final dense outputting layer for the outputs
+    outputs = layers.Dense(n_classes, activation=activations.softmax, kernel_initializer='he_normal')(x)
+
+    return outputs
