@@ -52,3 +52,22 @@ def group(x, n_layers, n_filters):
     x = layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(x)
 
     return x
+
+
+def classifier(x, n_classes):
+    """ construct the classifier
+    :param x: input to the classifier
+    :param n_classes: number of output classes
+    :return:
+    """
+    # flatten the feature maps
+    x = layers.Flatten()(x)
+
+    # two fully connected dense layers
+    x = layers.Dense(4096, activation=activations.relu)(x)
+    x = layers.Dense(4096, activation=activations.relu)(x)
+
+    # output layer for classification
+    x = layers.Dense(n_classes, activation=activations.softmax)(x)
+
+    return x
