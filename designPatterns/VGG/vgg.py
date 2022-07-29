@@ -20,3 +20,35 @@ def steam(inputs, levels=1):
                                     activation=activations.relu)(outputs)
 
     return outputs
+
+
+def learner(x, blocks):
+    """ construct the feature extractor
+    :param x: inputs to ther learner
+    :param blocks: list of groups:: filter size and number of conv layers
+    :return:
+    """
+
+    # the convolutional groups
+    for n_layers, n_filters in blocks:
+        x = group(x, n_layers, n_filters)
+
+    return x
+
+
+def group(x, n_layers, n_filters):
+    """ construct a convolutional group
+    :param x: input to the group
+    :param n_layers: number of convolutional layers
+    :param n_filters: number of filters
+    :return:
+    """
+
+    # block of convolutional layers
+    for n in range(n_layers):
+        x = layers.Conv2D(n_filters, kernel_size=(3,3), strides=(1,1), padding='same', activation=activations.relu)(x)
+
+    # max pooling at the end of the block
+    x = layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(x)
+
+    return x
